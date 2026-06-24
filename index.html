@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Wall — Content HQ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --board:#1F2C2A;--board-2:#23302E;--board-3:#182421;
+  --paper:#FBF7EE;--paper-2:#F1ECDF;
+  --ink:#1E2624;--slate:#6E7873;--slate-l:#9AA39E;
+  --fit:#E14B3A;--prod:#E0A23D;--life:#6B8F47;--custom:#7B6FA0;
+  --gold:#C9A86A;--hi:#F4C84A;--line:rgba(30,38,36,.12);
+  --glow:rgba(244,200,74,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--board);background-image:radial-gradient(circle at 15% 10%,rgba(255,255,255,.03),transparent 40%),radial-gradient(circle at 85% 75%,rgba(255,255,255,.02),transparent 45%);color:var(--paper);font-family:'Inter',sans-serif;line-height:1.5;min-height:100vh;}
+.wrap{max-width:1020px;margin:0 auto;padding:36px 20px 90px;}
+
+/* HEADER */
+header{margin-bottom:30px;}
+.eyebrow{font-family:'Caveat',cursive;font-size:20px;color:var(--hi);display:inline-block;transform:rotate(-1.5deg);margin-bottom:4px;}
+h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(32px,6vw,52px);line-height:1.03;letter-spacing:-.01em;margin-bottom:8px;}
+header .sub{color:var(--slate-l);font-size:15px;max-width:560px;}
+
+/* NAV TABS */
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin:24px 0 30px;border-bottom:1px solid rgba(255,255,255,.09);padding-bottom:18px;}
+.nav-btn{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;padding:8px 15px;border-radius:8px;border:1.5px solid rgba(255,255,255,.15);background:transparent;color:var(--slate-l);cursor:pointer;transition:all .15s;}
+.nav-btn.on{background:var(--hi);border-color:var(--hi);color:#241a05;}
+.nav-btn:not(.on):hover{border-color:rgba(255,255,255,.4);color:var(--paper);}
+
+/* PANELS */
+.panel{display:none;}
+.panel.on{display:block;}
+
+/* PILLAR FILTER */
+.pillar-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;}
+.ptab{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;padding:7px 14px;border-radius:999px;border:1.5px solid rgba(255,255,255,.16);background:transparent;color:var(--paper);cursor:pointer;transition:all .15s;}
+.ptab[data-p="fitness"].on{background:var(--fit);border-color:var(--fit);}
+.ptab[data-p="productivity"].on{background:var(--prod);border-color:var(--prod);color:#241a05;}
+.ptab[data-p="lifestyle"].on{background:var(--life);border-color:var(--life);}
+.ptab[data-p="all"].on{background:var(--paper);border-color:var(--paper);color:var(--ink);}
+.ptab:not(.on):hover{border-color:rgba(255,255,255,.35);}
+
+/* GENERATOR BOX */
+.gen-box{background:var(--board-2);border:1.5px dashed rgba(255,255,255,.15);border-radius:18px;padding:28px;margin-bottom:40px;}
+.gen-label{font-family:'Caveat',cursive;font-size:20px;color:var(--hi);margin-bottom:14px;}
+.gen-empty{color:var(--slate-l);font-size:14.5px;padding:14px 0;}
+.gen-card{background:var(--paper);color:var(--ink);border-radius:8px;padding:22px 24px;box-shadow:0 14px 30px rgba(0,0,0,.28);}
+.tag{display:inline-block;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:5px;color:#fff;margin-bottom:10px;}
+.gen-card .hook{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;line-height:1.25;margin-bottom:12px;}
+.gen-card .meta{font-size:13.5px;color:var(--slate);margin-bottom:4px;}
+.gen-card .meta b{color:var(--ink);font-weight:600;}
+.gen-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+
+/* BUTTONS */
+.btn{font-family:'Inter',sans-serif;font-weight:600;font-size:13.5px;padding:10px 18px;border-radius:8px;border:none;cursor:pointer;transition:transform .1s,opacity .15s;}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--ink);color:var(--paper);}
+.btn-primary:hover{opacity:.85;}
+.btn-ghost{background:transparent;border:1.5px solid rgba(30,38,36,.35);color:var(--ink);}
+.btn-ghost:hover{border-color:var(--ink);}
+.btn-hi{background:var(--hi);color:#241a05;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;padding:12px 22px;border-radius:9px;}
+.btn-hi:hover{filter:brightness(1.06);}
+.btn-ai{background:linear-gradient(135deg,#6B3FA0,#3D7EB5);color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13.5px;padding:11px 20px;border-radius:9px;}
+.btn-ai:hover{filter:brightness(1.12);}
+.btn-ai:disabled{opacity:.5;cursor:not-allowed;}
+
+/* BOARD */
+.board-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;}
+.board-head h2{font-family:'Space Grotesk',sans-serif;font-size:18px;}
+.board-count{font-size:13px;color:var(--slate-l);}
+.board-sub{color:var(--slate-l);font-size:13px;margin-bottom:18px;}
+.reset-link{background:none;border:none;color:var(--slate-l);font-size:12px;text-decoration:underline;cursor:pointer;font-family:'Inter',sans-serif;}
+.reset-link:hover{color:var(--paper);}
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:20px 16px;margin-bottom:50px;}
+.card{background:var(--paper);color:var(--ink);border-radius:4px;padding:16px 15px 14px;box-shadow:0 6px 18px rgba(0,0,0,.24);position:relative;font-size:13.5px;}
+.pinhead{position:absolute;top:-9px;left:50%;transform:translateX(-50%);width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,var(--gold) 60%,#8a703f 100%);box-shadow:0 2px 5px rgba(0,0,0,.4);}
+.card .hook{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14.5px;line-height:1.3;margin:8px 0 7px;}
+.card .fmt{font-family:'Caveat',cursive;font-size:15px;color:var(--slate);}
+.card .shot-note{font-size:12px;color:var(--slate);margin-top:4px;}
+.unpin{position:absolute;top:7px;right:7px;background:none;border:none;cursor:pointer;color:var(--slate-l);font-size:15px;line-height:1;padding:2px 5px;border-radius:4px;}
+.unpin:hover{color:var(--fit);background:rgba(0,0,0,.05);}
+.add-card{border:1.5px dashed rgba(255,255,255,.2);border-radius:4px;background:transparent;color:var(--slate-l);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;min-height:120px;font-family:'Inter',sans-serif;font-size:13px;padding:14px;transition:border-color .15s,color .15s;}
+.add-card:hover{border-color:var(--paper);color:var(--paper);}
+.add-card .plus{font-size:24px;}
+
+/* INLINE FORM */
+.inline-form{background:var(--paper);color:var(--ink);border-radius:8px;padding:20px;margin-bottom:30px;}
+.inline-form h3{font-family:'Space Grotesk',sans-serif;font-size:15px;margin-bottom:14px;}
+.frow{margin-bottom:11px;}
+.frow label{display:block;font-size:12px;color:var(--slate);margin-bottom:4px;font-weight:600;}
+.frow input,.frow select,.frow textarea{width:100%;padding:9px 11px;border-radius:6px;border:1.5px solid var(--line);font-family:'Inter',sans-serif;font-size:13.5px;background:#fff;color:var(--ink);resize:vertical;}
+.frow textarea{min-height:64px;}
+.form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+
+/* TOPIC GENERATOR */
+.topic-controls{background:var(--board-2);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:24px;margin-bottom:28px;}
+.topic-controls .tc-head{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;margin-bottom:6px;}
+.topic-controls p{color:var(--slate-l);font-size:13.5px;margin-bottom:18px;}
+.tc-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+.tc-select{padding:10px 13px;border-radius:8px;border:1.5px solid rgba(255,255,255,.18);background:var(--board);color:var(--paper);font-family:'Inter',sans-serif;font-size:14px;min-width:170px;}
+.topic-results{margin-bottom:40px;}
+.topic-card{background:var(--board-2);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:18px 20px;margin-bottom:12px;display:flex;gap:14px;align-items:flex-start;}
+.topic-card .tnum{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;color:var(--hi);line-height:1;min-width:28px;}
+.topic-card .tbody .ttitle{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15.5px;margin-bottom:5px;}
+.topic-card .tbody .tsource{font-size:12px;color:var(--slate-l);margin-bottom:6px;}
+.topic-card .tbody .twhy{font-size:13.5px;color:#D0D5D2;}
+.topic-card .tbody .thook{font-size:13px;color:var(--hi);margin-top:8px;font-family:'Caveat',cursive;font-size:17px;}
+.topic-card .tpin{background:none;border:1.5px solid rgba(255,255,255,.2);border-radius:6px;color:var(--slate-l);font-size:12.5px;padding:5px 10px;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;transition:all .15s;margin-top:2px;}
+.topic-card .tpin:hover{border-color:var(--hi);color:var(--hi);}
+
+/* BUILD ON MY IDEA */
+.build-wrap{margin-bottom:40px;}
+.seed-input-wrap{background:var(--board-2);border:1.5px dashed rgba(255,255,255,.2);border-radius:14px;padding:24px;margin-bottom:20px;}
+.seed-label{font-family:'Caveat',cursive;font-size:20px;color:var(--hi);margin-bottom:10px;}
+.seed-textarea{width:100%;padding:12px 14px;border-radius:8px;border:1.5px solid rgba(255,255,255,.15);background:var(--board-3);color:var(--paper);font-family:'Inter',sans-serif;font-size:15px;resize:vertical;min-height:72px;line-height:1.5;}
+.seed-textarea::placeholder{color:var(--slate);}
+.seed-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+.build-result{background:var(--paper);color:var(--ink);border-radius:10px;padding:26px 28px;box-shadow:0 14px 32px rgba(0,0,0,.3);}
+.build-result h3{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;margin-bottom:18px;}
+.build-section{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--line);}
+.build-section:last-of-type{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.build-section .bs-label{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);margin-bottom:6px;}
+.build-section .bs-body{font-size:14px;line-height:1.65;color:var(--ink);}
+.build-section .bs-body strong{font-weight:600;}
+.spinner{display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* WRITING TECHNIQUES */
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-bottom:40px;}
+.tech-card{background:var(--board-2);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:20px 22px;}
+.tech-card .tc-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:var(--hi);margin-bottom:8px;}
+.tech-card .tc-body{font-size:13.5px;color:#D0D5D2;line-height:1.65;}
+.tech-card .tc-eg{margin-top:10px;padding:10px 12px;background:var(--board-3);border-radius:6px;font-size:12.5px;color:var(--slate-l);font-style:italic;}
+.anti-list{list-style:none;margin-bottom:40px;}
+.anti-list li{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;color:#D0D5D2;}
+.anti-list li:last-child{border-bottom:none;}
+.anti-list .bad{color:var(--fit);font-weight:600;min-width:85px;font-size:13px;}
+.anti-list .good{color:var(--life);font-weight:600;}
+
+/* SECTION HEADS */
+.sec-head{margin-bottom:18px;}
+.sec-head h2{font-family:'Space Grotesk',sans-serif;font-size:19px;margin-bottom:4px;}
+.sec-head p{color:var(--slate-l);font-size:13.5px;}
+
+/* AI loading state */
+.ai-thinking{text-align:center;padding:36px 20px;color:var(--slate-l);}
+.ai-thinking .spin-big{display:inline-block;width:32px;height:32px;border:3px solid rgba(255,255,255,.12);border-top-color:var(--hi);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:12px;}
+
+/* Reference grids */
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-bottom:40px;}
+.ref-card{background:var(--board-2);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:16px 18px;}
+.ref-card .rt{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;color:var(--hi);margin-bottom:6px;}
+.ref-card p{font-size:13px;color:#D0D5D2;}
+.ref-card .eg{color:var(--slate-l);margin-top:6px;font-style:italic;font-size:12.5px;}
+
+footer{text-align:center;color:var(--slate-l);font-size:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.07);}
+
+@media(max-width:500px){
+  .tc-row,.gen-actions,.seed-actions,.form-actions{flex-direction:column;}
+  .tc-row .btn-ai,.tc-row .tc-select{width:100%;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">no budget, no excuse</span>
+  <h1>The Wall</h1>
+  <p class="sub">Content HQ — pull ideas, build on your own, generate topics from what's actually trending, and write like a human not a press release.</p>
+</header>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn on" data-tab="deck">🃏 Idea Deck</button>
+  <button class="nav-btn" data-tab="build">✏️ Build My Idea</button>
+  <button class="nav-btn" data-tab="topics">🔥 Topic Generator</button>
+  <button class="nav-btn" data-tab="board">📌 Board</button>
+  <button class="nav-btn" data-tab="writing">✍️ Writing</button>
+</div>
+
+<!-- ─── PANEL: DECK ─── -->
+<div class="panel on" id="tab-deck">
+  <div class="pillar-tabs" id="deckTabs">
+    <button class="ptab on" data-p="all">All</button>
+    <button class="ptab" data-p="fitness">Fitness</button>
+    <button class="ptab" data-p="productivity">Productivity</button>
+    <button class="ptab" data-p="lifestyle">Lifestyle</button>
+  </div>
+  <div class="gen-box">
+    <p class="gen-label">pull a card →</p>
+    <div id="genSlot" class="gen-empty">Hit the button. See what comes up.</div>
+    <div class="gen-actions" style="margin-top:18px;">
+      <button class="btn btn-hi" id="drawBtn">Pull an idea</button>
+    </div>
+  </div>
+  <div class="sec-head"><h2>How to use this deck</h2><p>Pull ideas, keep the ones that land. They save to your board automatically.</p></div>
+</div>
+
+<!-- ─── PANEL: BUILD ─── -->
+<div class="panel" id="tab-build">
+  <div class="build-wrap">
+    <div class="seed-input-wrap">
+      <p class="gen-label">what's your raw idea?</p>
+      <textarea class="seed-textarea" id="seedInput" placeholder="Type anything — a vague feeling, a topic you keep thinking about, something that happened today, a thing you want to explain…&#10;&#10;e.g. 'I feel like people overcomplicate morning routines' or 'filming my run commute in London'"></textarea>
+      <div class="seed-actions">
+        <button class="btn btn-ai" id="buildBtn"><span id="buildSpinner" style="display:none" class="spinner"></span>Build this out</button>
+        <div style="font-size:12.5px;color:var(--slate-l);align-self:center;">AI turns your seed into hook → script → shot → platform direction</div>
+      </div>
+    </div>
+    <div id="buildResult"></div>
+  </div>
+</div>
+
+<!-- ─── PANEL: TOPICS ─── -->
+<div class="panel" id="tab-topics">
+  <div class="topic-controls">
+    <p class="tc-head">Generate topics from the internet right now</p>
+    <p>Pulls from what people are actually talking about on TikTok, Instagram, Reddit and searches — then builds it into ready-to-shoot ideas for your pillars.</p>
+    <div class="tc-row">
+      <select class="tc-select" id="topicPillar">
+        <option value="all">All pillars</option>
+        <option value="fitness">Fitness</option>
+        <option value="productivity">Productivity</option>
+        <option value="lifestyle">Lifestyle</option>
+      </select>
+      <select class="tc-select" id="topicPlatform">
+        <option value="tiktok-instagram-reddit">TikTok + Instagram + Reddit</option>
+        <option value="tiktok">TikTok only</option>
+        <option value="instagram">Instagram only</option>
+        <option value="reddit">Reddit only</option>
+      </select>
+      <button class="btn btn-ai" id="topicBtn"><span id="topicSpinner" style="display:none" class="spinner"></span>Generate topics</button>
+    </div>
+  </div>
+  <div class="topic-results" id="topicResults"></div>
+</div>
+
+<!-- ─── PANEL: BOARD ─── -->
+<div class="panel" id="tab-board">
+  <div class="pillar-tabs" id="boardTabs">
+    <button class="ptab on" data-p="all">All</button>
+    <button class="ptab" data-p="fitness">Fitness</button>
+    <button class="ptab" data-p="productivity">Productivity</button>
+    <button class="ptab" data-p="lifestyle">Lifestyle</button>
+    <button class="ptab" data-p="custom">My own</button>
+  </div>
+  <div class="board-head">
+    <h2>Pinned ideas</h2>
+    <span class="board-count" id="boardCount">0 saved</span>
+  </div>
+  <p class="board-sub">Saved permanently. <button class="reset-link" id="resetBtn">Clear board</button></p>
+  <div id="inlineFormMount"></div>
+  <div class="board" id="board"></div>
+</div>
+
+<!-- ─── PANEL: WRITING ─── -->
+<div class="panel" id="tab-writing">
+  <div class="sec-head"><h2>Writing that actually sounds human</h2><p>Based on what converts on TikTok, Instagram and Reddit right now — not copywriting courses from 2019.</p></div>
+
+  <div class="tech-grid">
+    <div class="tech-card">
+      <div class="tc-title">Start mid-thought, not at the beginning</div>
+      <div class="tc-body">Scripts that open with "Hey guys, today I'm going to be talking about…" are already dead. Drop in mid-scene, mid-action, or mid-sentence. The viewer should have to catch up.
+        <div class="tc-eg">"—and I genuinely don't know how I survived before I figured this out."</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-title">Use the exact words your audience uses</div>
+      <div class="tc-body">Reddit threads are a goldmine. Whatever words show up in the top comments of r/productivity or r/fitness — that's how your audience thinks. Mirror that back to them, not a polished version.
+        <div class="tc-eg">"the 2pm crash that hits even when you slept fine"</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-title">Name the thing, then earn the explanation</div>
+      <div class="tc-body">State the payoff in the first 3 seconds. Don't tease, don't build to it. Give them the answer immediately, then explain why it works. They stay for the proof, not the mystery.
+        <div class="tc-eg">"Four tasks. That's the whole system. Here's why it actually works…"</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-title">Specific always beats general</div>
+      <div class="tc-body">AI writes "improve your productivity." Humans say "I cleared 47 overdue tasks in one sitting and it took exactly 90 minutes." A number, a real duration, a specific result — specificity is the credibility signal.
+        <div class="tc-eg">"I ran 4.7km on my lunch break and got back to my desk before anyone noticed."</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-title">PAS — but compress it to 3 seconds</div>
+      <div class="tc-body">Problem → Agitate → Solve still works, but at TikTok pace you've got one sentence per stage. Problem: name it. Agitate: twist the knife ("and no one talks about why"). Solve: tease it without giving it all away.
+        <div class="tc-eg">"You're tired by 2pm. It's not your sleep. It's your first 90 minutes — and here's the fix."</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-title">Stakes first, context second</div>
+      <div class="tc-body">Don't set up the story before you tell it. Open on the highest-stakes moment — the almost-quit, the near-miss, the actual failure — and let the context fill in naturally after the hook lands.
+        <div class="tc-eg">"I nearly quit running in week two. And I would have, if I hadn't figured out the thing nobody says."</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-title">Short sentences. Then one long one that breathes a little and lands differently.</div>
+      <div class="tc-body">Vary your rhythm. AI writes uniformly. Humans don't. A short sentence punches. A longer one builds. Mixing both feels like someone actually thinking through what they're saying.
+        <div class="tc-eg">Don't write in a consistent cadence. It reads like a robot. Break it.</div>
+      </div>
+    </div>
+    <div class="tech-card">
+      <div class="tc-title">Text overlay ≠ transcript</div>
+      <div class="tc-body">What you say and what appears on screen should be two different things. The text overlay adds — context, irony, contrast. Not subtitles. "I'm thriving" on screen while you clearly look exhausted is a joke that earns the watch-through.
+        <div class="tc-eg">Saying "yeah, the morning routine is going great" → text overlay: "7am, first attempt at coffee"</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-head"><h2>The AI tells vs human writing</h2><p>Audience trust drops the moment something feels written by a machine. Avoid these exactly.</p></div>
+  <ul class="anti-list">
+    <li><span class="bad">AI: Furthermore</span><span>Human: <span class="good">Also / And / Here's the kicker:</span></span></li>
+    <li><span class="bad">AI: In today's world</span><span>Human: <span class="good">Right now / This week / I noticed this on Tuesday</span></span></li>
+    <li><span class="bad">AI: It's important to note</span><span>Human: <span class="good">The thing is / Worth saying:</span></span></li>
+    <li><span class="bad">AI: This is a game-changer</span><span>Human: <span class="good">This changed how I do mornings / I actually use this</span></span></li>
+    <li><span class="bad">AI: In conclusion</span><span>Human: <span class="good">So. / The short version: / Which means—</span></span></li>
+    <li><span class="bad">AI: Delve into</span><span>Human: <span class="good">Get into / Break down / Actually look at</span></span></li>
+    <li><span class="bad">AI: I hope this helps</span><span>Human: <span class="good">[nothing — just end]</span></span></li>
+    <li><span class="bad">AI: Comprehensive</span><span>Human: <span class="good">Full / Complete / The whole thing</span></span></li>
+  </ul>
+
+  <div class="sec-head"><h2>The humanise-before-you-post checklist</h2><p>Run every caption, hook and script through this before filming.</p></div>
+  <div class="ref-grid">
+    <div class="ref-card"><div class="rt">Could a real person say this out loud?</div><p>If it would sound weird to say it to a friend, it sounds weird on camera. Read it aloud. Your ear catches what your eye misses.</p></div>
+    <div class="ref-card"><div class="rt">Is there a specific detail in here?</div><p>A real number, a time, a place, a name. "I did this in 23 minutes on my lunch break on Tuesday" lands harder than "in a short time."</p></div>
+    <div class="ref-card"><div class="rt">Does it have your accent?</div><p>Your voice is the thing that can't be replicated. London-flavoured, direct, no corporate gloss. If it could have been written by anyone, rewrite it.</p></div>
+    <div class="ref-card"><div class="rt">Is there a contradiction or tension?</div><p>The most human content holds two things at once. "I love running and I hate the first five minutes every single time." That tension is real — and people share it.</p></div>
+    <div class="ref-card"><div class="rt">Does it earn the watch-through?</div><p>Instagram rewards saves and shares. TikTok rewards rewatch rate. The question is always: why would someone watch this again? Build that reason into the ending.</p></div>
+    <div class="ref-card"><div class="rt">Is there something left unsaid?</div><p>The best content creates a tiny gap — something the viewer wants to fill in or reply to. Don't wrap everything up perfectly. Leave a thread.</p></div>
+  </div>
+
+</div>
+
+</div><!-- /wrap -->
+<footer style="max-width:1020px;margin:0 auto;padding:0 20px 30px;">Honest, direct, no corporate gloss. That's the whole brief.</footer>
+
+<script>
+/* ====================== DATA ====================== */
+const IDEAS = [
+  {p:'fitness',hook:"I stopped doing cardio and lost more fat. Here's the maths nobody explains.",format:'Overhead shot',shot:'Film your training log from directly above — book, pen, kettlebell. Phone rested on a shelf.'},
+  {p:'fitness',hook:"POV: you said you'd train at 6am and you actually did.",format:'Knee-to-face reveal',shot:'Start the phone at your trainers, rise slowly to your face mid-warm-up. One continuous take.'},
+  {p:'fitness',hook:'Plan A: gym bag packed, alarm set. Plan B…',format:'Plan A / Plan B',shot:"Film the intention shot, then the reality shot ten seconds later in the same spot."},
+  {p:'fitness',hook:"Things that almost killed my motivation — and how I came back from it.",format:'Collapse → comeback',shot:'Slump dramatically, then snap back on the beat drop.'},
+  {p:'fitness',hook:'3 things I wish someone said before my first 10k.',format:'Direct lesson',shot:'Face a window. Phone at eye level. No ring light needed.'},
+  {p:'fitness',hook:"What 'rich in life' actually looks like for a runner in London.",format:'Rich-in-life montage',shot:'Six 2-second clips: trainers by door, sunrise, post-run coffee, stretching, training log, finish.'},
+  {p:'fitness',hook:"I trained fasted for a week. Here's what nobody tells you.",format:'Direct to camera',shot:'Single static take. No cuts. Talk straight into the lens.'},
+  {p:'fitness',hook:"The gym bag flatlay that tells you everything about my training era right now.",format:'Flatlay overhead',shot:'Lay your kit on the floor, film straight down from above.'},
+  {p:'fitness',hook:"POV: I said I have a run, so everything else can wait.",format:'"I have [x]" cut',shot:'Hard cut from excuse-face straight to lacing trainers.'},
+  {p:'fitness',hook:"The unsexy habit that's done more for my fitness than any training programme.",format:'Direct to camera',shot:'Handheld, mid-walk or commute. No setup at all.'},
+  {p:'fitness',hook:"Colour walk: today's colour is black. Watch what counts as gym kit in London.",format:'Colour walk',shot:'Collect 8-10 matching items in 2-second clips as you move through your space.'},
+  {p:'fitness',hook:"I hate the first 5 minutes of every single run. I still go every time.",format:'Confession + payoff',shot:'Walking out of the door, then returning. Simple cut.'},
+  {p:'productivity',hook:"I cleared 47 overdue tasks and didn't cry once. Here's the system.",format:'Main-character cut',shot:'Film your task app, then your reaction.'},
+  {p:'productivity',hook:"POV: I said 'one more email' and it's now 9pm.",format:'Plan A / Plan B',shot:'Clean desk shot, then same desk four hours later.'},
+  {p:'productivity',hook:'The 4-task rule that fixed my mornings. Zero apps required.',format:'Direct lesson',shot:'Desk-level phone, natural window light.'},
+  {p:'productivity',hook:"What's actually in my 'productive day' kit.",format:'Held-out flatlay',shot:'Hold out planner, laptop, coffee — phone showing your task list facing camera.'},
+  {p:'productivity',hook:'How my calendar actually works when you run three things at once.',format:'Day-in-the-life montage',shot:'Quick cuts between desk, laptop, a call — all filmed on the actual day.'},
+  {p:'productivity',hook:'The productivity advice that nearly killed my actual output.',format:'Collapse → comeback',shot:'Slump over the desk, snap upright on the beat.'},
+  {p:'productivity',hook:'Overhead shot of the exact system I use to run three things at once.',format:'Overhead shot',shot:'Phone directly above your desk — notebook, laptop, phone all visible.'},
+  {p:'productivity',hook:"I budgeted properly for the first time and actually survived the month.",format:'Main-character cut',shot:'Film bank app or spreadsheet, then react.'},
+  {p:'productivity',hook:"The one habit that separates 'busy' from 'productive.'",format:'Direct lesson',shot:'Single static take. No edit needed.'},
+  {p:'productivity',hook:"Rich in life: when your to-do list and your life actually match.",format:'Rich-in-life montage',shot:'Notebook, calendar, a ticked-off task, closing the laptop. Calm, unhurried.'},
+  {p:'lifestyle',hook:"What 'home' actually means when you're juggling three jobs in London.",format:'"I am home" strut',shot:'Walk into the place that actually feels like yours — gym, café, desk — and let it land.'},
+  {p:'lifestyle',hook:'Plan A: quiet night in. Plan B…',format:'Plan A / Plan B',shot:'Same spot, same angle, two different realities.'},
+  {p:'lifestyle',hook:"Colour walk: today's colour is matcha green. London edition.",format:'Colour walk',shot:'Walk a London street collecting green — matcha cup, plants, signage, your jumper.'},
+  {p:'lifestyle',hook:"Rich in life: the small stuff that makes running three businesses actually worth it.",format:'Rich-in-life montage',shot:'Coffee, commute view, finished task, a call with a friend — six quick clips.'},
+  {p:'lifestyle',hook:"POV: I said 'I have a meeting' and disappeared to make matcha instead.",format:'"I have [x]" cut',shot:'Cut from serious face straight to pouring matcha, hard cut on the beat.'},
+  {p:'lifestyle',hook:"A day in my actual London life — property, NHS, side hustle, no glamour.",format:'Day-in-the-life montage',shot:'Phone-only clips through the day, real locations, no extra lighting.'},
+  {p:'lifestyle',hook:"What's actually in my bag on a three-job kind of day.",format:'Held-out flatlay',shot:'Hold bag contents out to camera — laptop, keys, matcha tin, phone with calendar open.'},
+  {p:'lifestyle',hook:"The thing about London hustle culture nobody says out loud.",format:'Direct opinion',shot:'Static handheld, natural light, no setup.'},
+  {p:'lifestyle',hook:'Knee-to-face: getting ready for a three-job day, no filter.',format:'Knee-to-face reveal',shot:'Start at your shoes, rise slowly to your face.'},
+  {p:'lifestyle',hook:"The habit that almost killed my evenings — and the fix that cost £0.",format:'Collapse → comeback',shot:'Collapse on sofa, snap back to life mid-routine on the beat.'},
+  {p:'lifestyle',hook:"Main character energy: when the matcha actually works and you remember why you started.",format:'Main-character cut',shot:'React mid-sip, then text overlay reveals the real reason.'},
+];
+
+const PCOL = {fitness:'var(--fit)',productivity:'var(--prod)',lifestyle:'var(--life)',custom:'var(--custom)'};
+const PLBL = {fitness:'Fitness',productivity:'Productivity',lifestyle:'Lifestyle',custom:'Your own'};
+
+/* ====================== STATE ====================== */
+let pinned = [];
+let deckPillar = 'all';
+let boardPillar = 'all';
+let currentDraw = null;
+let formOpen = false;
+
+/* ====================== CONFIG ====================== */
+// Set your Anthropic API key here to enable AI features (keep this secret!).
+// Paste your Anthropic API key here to enable AI features (quick and insecure).
+// Example: const ANTHROPIC_API_KEY = 'sk-xxxx';
+// IMPORTANT: Do NOT hardcode secret API keys into client-side code.
+// Set this to an empty string here and provide the key from a secure
+// server-side proxy or environment variable instead.
+const ANTHROPIC_API_KEY = '';
+// Recommended model name — change if needed.
+const ANTHROPIC_MODEL = 'claude-2';
+
+/* ====================== NAV ====================== */
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('on');
+    if(btn.dataset.tab==='board') renderBoard();
+  });
+});
+
+/* ====================== PILLAR TABS ====================== */
+function initPillarTabs(containerId, onChange){
+  document.getElementById(containerId).addEventListener('click', e=>{
+    const btn = e.target.closest('.ptab');
+    if(!btn) return;
+    document.querySelectorAll(`#${containerId} .ptab`).forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    onChange(btn.dataset.p);
+  });
+}
+initPillarTabs('deckTabs', p=>{ deckPillar=p; currentDraw=null; renderGenEmpty(); });
+initPillarTabs('boardTabs', p=>{ boardPillar=p; renderBoard(); });
+
+/* ====================== DECK ====================== */
+function pool(){ return deckPillar==='all'?IDEAS:IDEAS.filter(i=>i.p===deckPillar); }
+
+function renderGenEmpty(){
+  const s=document.getElementById('genSlot');
+  s.className='gen-empty';
+  s.innerHTML='Hit the button. See what comes up.';
+}
+
+function renderGenCard(idea){
+  const s=document.getElementById('genSlot');
+  s.className='gen-card';
+  s.innerHTML=`
+    <span class="tag" style="background:${PCOL[idea.p]}">${PLBL[idea.p]} · ${idea.format}</span>
+    <p class="hook">${idea.hook}</p>
+    <p class="meta"><b>Shot:</b> ${idea.shot}</p>
+    <div class="gen-actions">
+      <button class="btn btn-primary" id="keepBtn">Pin it</button>
+      <button class="btn btn-ghost" id="againBtn">Pull again</button>
+    </div>`;
+  document.getElementById('keepBtn').addEventListener('click',keepCurrent);
+  document.getElementById('againBtn').addEventListener('click',drawIdea);
+}
+
+function drawIdea(){
+  const p=pool();
+  if(!p.length){renderGenEmpty();return;}
+  currentDraw=p[Math.floor(Math.random()*p.length)];
+  renderGenCard(currentDraw);
+}
+
+function keepCurrent(){
+  if(!currentDraw) return;
+  const entry={...currentDraw,id:'i_'+Date.now()+'_'+Math.floor(Math.random()*999),rot:(Math.random()*4-2).toFixed(1)};
+  pinned.push(entry);
+  persist();
+  renderGenEmpty();
+  currentDraw=null;
+  // toast
+  showToast('Pinned to your board ✓');
+}
+
+document.getElementById('drawBtn').addEventListener('click',drawIdea);
+
+/* ====================== BOARD ====================== */
+function cardHTML(item){
+  const col=PCOL[item.p]||PCOL.custom;
+  const lbl=PLBL[item.p]||PLBL.custom;
+  return `<div class="card" style="transform:rotate(${item.rot||0}deg)" data-id="${item.id}">
+    <div class="pinhead"></div>
+    <button class="unpin" data-id="${item.id}" title="Unpin">×</button>
+    <span class="tag" style="background:${col}">${lbl}${item.format?' · '+item.format:''}</span>
+    <p class="hook">${item.hook}</p>
+    ${item.shot?`<p class="shot-note">${item.shot}</p>`:''}
+  </div>`;
+}
+
+function renderBoard(){
+  closeForm(); // reset form state whenever board re-renders
+  const visible = boardPillar==='all'?pinned:pinned.filter(i=>i.p===boardPillar);
+  document.getElementById('boardCount').textContent=`${pinned.length} saved`;
+  let html = visible.map(cardHTML).join('');
+  html+=`<div class="add-card" id="addCardBtn"><span class="plus">+</span><span>Add your own</span></div>`;
+  document.getElementById('board').innerHTML=html;
+  document.getElementById('addCardBtn').addEventListener('click',toggleForm);
+  document.querySelectorAll('.unpin').forEach(btn=>btn.addEventListener('click',()=>unpin(btn.dataset.id)));
+}
+
+function unpin(id){
+  pinned=pinned.filter(i=>i.id!==id);
+  persist();
+  renderBoard();
+}
+
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  if(!confirm('Clear everything off the board?')) return;
+  pinned=[];
+  persist();
+  renderBoard();
+});
+
+/* inline form */
+function toggleForm(){
+  if(formOpen) return;
+  formOpen=true;
+  const m=document.getElementById('inlineFormMount');
+  m.innerHTML=`<div class="inline-form" id="customForm">
+    <h3>Pin your own idea</h3>
+    <div class="frow"><label>Hook line</label><input type="text" id="cHook" placeholder="What's the opening line?"></div>
+    <div class="frow"><label>Pillar</label><select id="cPillar"><option value="custom">My own</option><option value="fitness">Fitness</option><option value="productivity">Productivity</option><option value="lifestyle">Lifestyle</option></select></div>
+    <div class="frow"><label>Shot / format note (optional)</label><input type="text" id="cFormat" placeholder="e.g. overhead shot, talking-head…"></div>
+    <div class="form-actions"><button class="btn btn-primary" id="cSave">Pin it</button><button class="btn btn-ghost" id="cCancel">Cancel</button></div>
+  </div>`;
+  document.getElementById('cSave').addEventListener('click',saveCustom);
+  document.getElementById('cCancel').addEventListener('click',closeForm);
+}
+function closeForm(){ const f=document.getElementById('customForm');if(f)f.remove();formOpen=false; }
+function saveCustom(){
+  const hook=document.getElementById('cHook').value.trim();
+  if(!hook)return;
+  const entry={p:document.getElementById('cPillar').value,hook,format:document.getElementById('cFormat').value.trim(),shot:'',id:'i_'+Date.now(),rot:(Math.random()*4-2).toFixed(1)};
+  pinned.push(entry);
+  persist();
+  closeForm();
+  renderBoard();
+}
+
+/* ====================== PERSIST ====================== */
+const STORAGE_KEY = 'pinned-v2';
+function persist() {
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(pinned)
+    );
+  } catch (err) {
+    console.error('Save failed:', err);
+  }
+}
+function loadPinned() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    pinned = saved
+      ? JSON.parse(saved)
+      : [];
+  } catch (err) {
+    console.error('Load failed:', err);
+    pinned = [];
+  }
+  renderBoard();
+}
+loadPinned();
+
+/* ====================== TOAST ====================== */
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:#F4C84A;color:#241a05;font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:13.5px;padding:10px 20px;border-radius:8px;z-index:999;box-shadow:0 8px 20px rgba(0,0,0,.3);';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2200);
+}
+
+/* ====================== BUILD MY IDEA (Anthropic API) ====================== */
+document.getElementById('buildBtn').addEventListener('click', async()=>{
+  const seed=document.getElementById('seedInput').value.trim();
+  if(!seed){ alert('Type your idea first.'); return; }
+
+  const btn=document.getElementById('buildBtn');
+  const spinner=document.getElementById('buildSpinner');
+  btn.disabled=true;
+  spinner.style.display='inline-block';
+  document.getElementById('buildResult').innerHTML='';
+
+  const prompt=`You are a social media content strategist for a 24-year-old London-based creator (Ayo). His pillars are fitness, productivity and lifestyle. He has zero budget — just his phone. He has a direct, honest, London-flavoured voice. No corporate gloss. He does not write like a press release.
+
+The creator's raw seed idea: "${seed}"
+
+Expand this into a full content brief. Return ONLY valid JSON with exactly these keys:
+{
+  "pillar": "fitness|productivity|lifestyle",
+  "refined_hook": "the opening 1-2 sentences exactly as they would appear on screen — punchy, human, specific, no AI tells",
+  "why_this_works": "2-3 sentences on why this idea will perform on TikTok/Instagram right now — reference a real format or trend if relevant",
+  "script_structure": "4-6 numbered beats: what you say/show in each stage of the video. Write these as actual directions, not abstract labels.",
+  "shot_direction": "Specific camera angle, movement, and framing — zero budget, phone only",
+  "platform_first": "TikTok|Instagram Reels|Both",
+  "caption_starter": "The first sentence of the caption — human voice, no hashtag spam, sets up the rest",
+  "humanise_tip": "One specific tip to stop this video sounding AI-generated or corporate — based on what Ayo's voice is like"
+}
+
+Return ONLY the JSON object. No explanation, no markdown fences.`;
+
+  try{
+    if(!ANTHROPIC_API_KEY){
+      document.getElementById('buildResult').innerHTML='<div class="build-result"><p style="color:var(--fit);font-weight:600;">Anthropic API key not configured. Set ANTHROPIC_API_KEY in the page to enable AI features.</p></div>';
+      btn.disabled=false;
+      spinner.style.display='none';
+      return;
+    }
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','Authorization':'Bearer '+ANTHROPIC_API_KEY},
+      body:JSON.stringify({model:ANTHROPIC_MODEL,max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data?.error?.message||'API error '+res.status);
+    const rawText=data.content.filter(c=>c.type==='text').map(c=>c.text).join('');
+    const match=rawText.match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('No JSON found in response');
+    const obj=JSON.parse(match[0]);
+    renderBuildResult(obj, seed);
+  }catch(e){
+    document.getElementById('buildResult').innerHTML='<div class="build-result"><p style="color:var(--fit);font-weight:600;">Error: '+e.message+'</p><p style="font-size:13px;color:var(--slate);margin-top:6px;">Try again — if it keeps failing, check your connection.</p></div>';
+  }
+
+  btn.disabled=false;
+  spinner.style.display='none';
+});
+
+function renderBuildResult(obj, original){
+  window._lastBuild = obj; // store safely — no inline JSON serialisation in attributes
+  const col=PCOL[obj.pillar]||PCOL.custom;
+  const lbl=PLBL[obj.pillar]||'General';
+  const beatLines=(obj.script_structure||'').split('\n').map(l=>l.trim()).filter(l=>l.length>0).map(l=>`<li style="margin-bottom:6px">${l}</li>`).join('');
+  document.getElementById('buildResult').innerHTML=`
+    <div class="build-result">
+      <h3><span class="tag" style="background:${col};vertical-align:middle;">${lbl}</span>&nbsp; Built out: "${original.slice(0,50)}${original.length>50?'…':''}"</h3>
+      <div class="build-section"><div class="bs-label">Refined hook</div><div class="bs-body" style="font-size:18px;font-family:'Space Grotesk',sans-serif;font-weight:700;">${obj.refined_hook}</div></div>
+      <div class="build-section"><div class="bs-label">Why this works right now</div><div class="bs-body">${obj.why_this_works}</div></div>
+      <div class="build-section"><div class="bs-label">Script structure</div><div class="bs-body"><ol style="padding-left:18px;line-height:1.9;">${beatLines}</ol></div></div>
+      <div class="build-section"><div class="bs-label">Shot direction (phone only, £0)</div><div class="bs-body">${obj.shot_direction}</div></div>
+      <div class="build-section"><div class="bs-label">Post first on</div><div class="bs-body"><strong>${obj.platform_first}</strong></div></div>
+      <div class="build-section"><div class="bs-label">Caption starter</div><div class="bs-body" style="font-style:italic;">"${obj.caption_starter}"</div></div>
+      <div class="build-section"><div class="bs-label">Humanise tip</div><div class="bs-body" style="color:var(--life);">⚡ ${obj.humanise_tip}</div></div>
+      <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-primary" id="pinBuildBtn">Pin to board</button>
+        <button class="btn btn-ghost" id="clearBuildBtn">Clear</button>
+      </div>
+    </div>`;
+  document.getElementById('pinBuildBtn').addEventListener('click', ()=>{
+    if(window._lastBuild) pinBuildResult(window._lastBuild);
+  });
+  document.getElementById('clearBuildBtn').addEventListener('click', ()=>{
+    document.getElementById('buildResult').innerHTML='';
+  });
+}
+
+function pinBuildResult(obj){
+  const entry={p:obj.pillar||'custom',hook:obj.refined_hook,format:obj.platform_first||'',shot:obj.shot_direction||'',id:'b_'+Date.now(),rot:(Math.random()*4-2).toFixed(1)};
+  pinned.push(entry);
+  persist();
+  showToast('Pinned to your board ✓');
+}
+
+/* ====================== TOPIC GENERATOR (Anthropic API) ====================== */
+document.getElementById('topicBtn').addEventListener('click', async()=>{
+  const pillar=document.getElementById('topicPillar').value;
+  const platform=document.getElementById('topicPlatform').value;
+  const btn=document.getElementById('topicBtn');
+  const spinner=document.getElementById('topicSpinner');
+  btn.disabled=true;
+  spinner.style.display='inline-block';
+
+  const res=document.getElementById('topicResults');
+  res.innerHTML=`<div class="ai-thinking"><div class="spin-big"></div><br>Scanning what's trending…</div>`;
+
+  const now='June 2026';
+  const platformDesc={
+    'tiktok-instagram-reddit':'TikTok, Instagram, and Reddit (subreddits like r/fitness, r/productivity, r/LifeProTips, r/london, r/running)',
+    'tiktok':'TikTok',
+    'instagram':'Instagram Reels',
+    'reddit':'Reddit (subreddits including r/fitness, r/productivity, r/LifeProTips, r/running)'
+  }[platform];
+
+  const pillarDesc=pillar==='all'
+    ? 'fitness, productivity, and lifestyle (London-based 24-year-old creator, runs, drinks matcha, juggles multiple jobs)'
+    : `${pillar} (London-based 24-year-old creator, runs, drinks matcha, juggles multiple jobs)`;
+
+  const prompt=`You are a social media content strategist. Today is ${now}. Generate 6 highly specific, timely content topic ideas for a creator whose pillars are ${pillarDesc}.
+
+These topics must be grounded in what is genuinely trending or being discussed on ${platformDesc} right now in ${now}. Reference the format, trend name, or conversation pattern where relevant.
+
+The creator has zero budget (phone only), a direct honest London voice, no corporate gloss.
+
+Return ONLY valid JSON — an array of exactly 6 objects with these keys:
+[
+  {
+    "pillar": "fitness|productivity|lifestyle",
+    "title": "The content topic in 6-10 words",
+    "source": "TikTok|Instagram|Reddit|TikTok + Reddit (the platform where this trend/conversation lives)",
+    "why_now": "1 sentence: why this topic is hot specifically in ${now}",
+    "hook": "The opening line exactly as it would appear on screen — punchy, human, specific",
+    "format": "The best format to shoot this (e.g. overhead shot, talking head, Plan A/B, colour walk, etc.)"
+  }
+]
+
+Return ONLY the JSON array. No explanation. No markdown fences.`;
+
+  try{
+    if(!ANTHROPIC_API_KEY){
+      res.innerHTML='<p style="color:var(--fit);padding:20px 0;font-weight:600;">Anthropic API key not configured. Set ANTHROPIC_API_KEY in the page to enable AI features.</p>';
+      btn.disabled=false;
+      spinner.style.display='none';
+      return;
+    }
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','Authorization':'Bearer '+ANTHROPIC_API_KEY},
+      body:JSON.stringify({model:ANTHROPIC_MODEL,max_tokens:1200,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await r.json();
+    if(!r.ok) throw new Error(data?.error?.message||'API error '+r.status);
+    const rawText=data.content.filter(c=>c.type==='text').map(c=>c.text).join('');
+    const match=rawText.match(/\[[\s\S]*\]/);
+    if(!match) throw new Error('No JSON array in response');
+    const topics=JSON.parse(match[0]);
+    renderTopics(topics);
+  }catch(e){
+    res.innerHTML='<p style="color:var(--fit);padding:20px 0;font-weight:600;">Error: '+e.message+'</p>';
+  }
+
+  btn.disabled=false;
+  spinner.style.display='none';
+});
+
+function renderTopics(topics){
+  const res=document.getElementById('topicResults');
+  if(!topics||!topics.length){ res.innerHTML='<p style="color:var(--slate-l);padding:20px 0;">No topics generated. Try again.</p>'; return; }
+  res.innerHTML=topics.map((t,i)=>{
+    const col=PCOL[t.pillar]||PCOL.custom;
+    const lbl=PLBL[t.pillar]||'General';
+    return `<div class="topic-card">
+      <span class="tnum" style="color:${col}">${String(i+1).padStart(2,'0')}</span>
+      <div class="tbody" style="flex:1;">
+        <span class="tag" style="background:${col};margin-bottom:6px;">${lbl}</span>
+        <div class="ttitle">${t.title}</div>
+        <div class="tsource">from ${t.source}</div>
+        <div class="twhy">${t.why_now}</div>
+        ${t.format?`<div class="twhy" style="margin-top:4px;color:var(--slate-l)">Format: ${t.format}</div>`:''}
+        <div class="thook">"${t.hook}"</div>
+      </div>
+      <button class="tpin" onclick="pinTopic(${i})" data-ti="${i}">Pin →</button>
+    </div>`;
+  }).join('');
+  // Store topics for pinning
+  window._lastTopics=topics;
+}
+
+function pinTopic(i){
+  const t=window._lastTopics&&window._lastTopics[i];
+  if(!t) return;
+  const entry={p:t.pillar||'custom',hook:t.hook,format:t.format||'',shot:'',id:'t_'+Date.now()+'_'+i,rot:(Math.random()*4-2).toFixed(1)};
+  pinned.push(entry);
+  persist();
+  showToast('Pinned ✓');
+}
+</script>
+</body>
+</html>
